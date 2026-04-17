@@ -9,7 +9,7 @@
     <div class="container page">
       <div class="row article-content">
         <div class="col-xs-12">
-          <div v-html="parseMarkdown(article.body)"></div>
+          <div v-html="sanitizeHtml(parseMarkdown(article.body))"></div>
           <ul class="tag-list">
             <li v-for="(tag, index) of article.tagList" :key="tag + index">
               <RwvTag
@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import DOMPurify from "dompurify";
 import { mapGetters } from "vuex";
 import marked from "marked";
 import store from "@/store";
@@ -87,6 +88,14 @@ export default {
     ...mapGetters(["article", "currentUser", "comments", "isAuthenticated"])
   },
   methods: {
+    sanitizeHtml(html) {
+      return html
+        ? DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ['span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'strong', 'em', 'code', 'pre', 'blockquote', 'br', 'hr'],
+            ALLOWED_ATTR: ['class', 'href'],
+          })
+        : '';
+    },
     parseMarkdown(content) {
       return marked(content);
     }
